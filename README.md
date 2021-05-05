@@ -13,3 +13,5 @@ Note:
 3. 	To locate your district code, do the following:
 	- Check for your state code, visit https://cdn-api.co-vin.in/api/v2/admin/location/states
 	- Get the state_id for your state, and visit https://cdn-api.co-vin.in/api/v2/admin/location/districts/<state_id> e.g. https://cdn-api.co-vin.in/api/v2/admin/location/districts/12
+4. The sender email account has to allow less secure apps to send email: https://myaccount.google.com/lesssecureapps to allow less secure apps to send email
+5. Recommendation is to use a backup account to ensure complete security.
