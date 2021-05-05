@@ -111,11 +111,7 @@ def parseArgs(argv):
 
 if __name__ == '__main__':
     periodicity = 5 # check every 5 minutes
-    parseArgs(sys.argv[1:])
-	# To locate your district code, do the following:
-	# Check for your state, visit https://cdn-api.co-vin.in/api/v2/admin/location/states
-	# Get the state_id for your state, and visit https://cdn-api.co-vin.in/api/v2/admin/location/districts/<state_id> e.g. https://cdn-api.co-vin.in/api/v2/admin/location/districts/12
-	
+    parseArgs(sys.argv[1:])	
 	
     while True:
         for x in range(7):
