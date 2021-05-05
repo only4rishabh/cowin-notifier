@@ -1,16 +1,15 @@
 import os
+import sys
 import smtplib
 import datetime
 import requests
+import getopt
 from time import time,ctime,sleep
 
-# Replace below with the sender's email/password. It won't be cached anywhere. The script runs locally on your device.
-senderEmail = 'sender@gmail.com'
-senderPassword = 'senderPwd'
-
-receiverList = ['receiver@gmail.com']
-# Note this list can be comma separated to notify multiple people like 
-# ['receiver1@gmail.com', 'receiver2@gmail.com']
+G_senderEmail = ""
+G_senderPassword = ""
+G_receierList = ""
+G_districtCode = ""
 
 # https://myaccount.google.com/lesssecureapps to allow less secure apps to send email
 def sendEmail(res):
@@ -21,16 +20,16 @@ From: %s
 To: %s 
 Subject: %s
 %s
-""" % (senderEmail, ", ".join(receiverList), subject, body)
+""" % (G_senderEmail, ", ".join(G_receierList), subject, body)
 	print (content)
 
 	try:
 	    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
 	    server.ehlo()
-	    server.login(senderEmail, senderPassword)
-	    server.sendmail(senderEmail, receiverList, content)
+	    server.login(G_senderEmail, G_senderPassword)
+	    server.sendmail(G_senderEmail, G_receierList, content)
 	    server.close()
-	    print ('Email sent to: ' + ", ".join(receiverList))
+	    print ('Email sent to: ' + ", ".join(G_receierList))
 	except Exception as exc:
 	    print ('Exception sending email. Exception')
 	    print (exc)
@@ -73,18 +72,56 @@ def checkCenters(endPoint):
     else:
 	    return False
 
+def parseArgs(argv):
+    global G_senderEmail, G_senderPassword,  G_receierList, G_districtCode
+
+    usageString = 'Usage: cowinNotifier.py [-e senderEmail][-p senderPwd][-r commaSeparatedReceiversEmail][-d districtCode]' 
+    try:
+      opts, args = getopt.getopt(argv,"he:p:r:d:",["help","senderEmail=","senderPwd=","receiverList=","districtCode="])
+
+    except getopt.GetoptError:
+        print (usageString)
+        sys.exit(1)
+
+    for opt, arg in opts:
+        if opt == '-h':
+            print (usageString)
+            sys.exit(2)
+        elif opt in ("-e", "--senderEmail"):
+            G_senderEmail = arg
+        elif opt in ("-p", "--senderPwd"):
+            G_senderPassword = arg
+        elif opt in ("-r", "--receiverList"):
+            G_receierList = arg
+        elif opt in ("-d", "--districtCode"):
+            G_districtCode = arg
+        else:
+            print("Parameter " + opt + " is not supported")
+            print(usageString)
+
+    if (G_senderEmail == '' or G_senderPassword == '' or G_receierList == ''):
+        print(usageString)
+        sys.exit(3)
+    if (G_districtCode == ''):
+        G_districtCode = "193" # Code for district Ambala, if nothing is specified.
+    G_receierList = G_receierList.split(',')
+    G_receierList = [s.strip() for s in G_receierList]
+
+    return 0
+
 if __name__ == '__main__':
     periodicity = 5 # check every 5 minutes
-    districtCode = "193" # Code for district ambala
+    parseArgs(sys.argv[1:])
 	# To locate your district code, do the following:
 	# Check for your state, visit https://cdn-api.co-vin.in/api/v2/admin/location/states
 	# Get the state_id for your state, and visit https://cdn-api.co-vin.in/api/v2/admin/location/districts/<state_id> e.g. https://cdn-api.co-vin.in/api/v2/admin/location/districts/12
-
+	
+	
     while True:
         for x in range(7):
             _date = datetime.date.today() + datetime.timedelta(days=x)
             _date = str(_date.strftime("%d/%m/%Y")).replace("/","-")
-            endPoint = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=" + districtCode+ "&date="+ _date
+            endPoint = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=" + G_districtCode + "&date="+ _date
             if checkCenters(endPoint) == True:
                 break
             else:
