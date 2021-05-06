@@ -48,7 +48,8 @@ def availableCenters(result):
 def checkCenters(endPoint):
     print(ctime(time()))
     print (endPoint)
-    response = requests.get(endPoint)
+    userAgent = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+    response = requests.get(endPoint, headers = userAgent)
 
     if response.status_code == 200:
         result = response.json()
@@ -68,9 +69,11 @@ def checkCenters(endPoint):
             sendEmail(resultStr)
             return True
         else:
+            print ("Vaccine slot not available on: " + _date +"\n")
             return False
     else:
-	    return False
+        print("Could not check for vaccine availability at the moment. HTTP Code: " + str(response.status_code))
+        return False
 
 def parseArgs(argv):
     global G_senderEmail, G_senderPassword,  G_receierList, G_districtCode
@@ -120,8 +123,6 @@ if __name__ == '__main__':
             endPoint = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=" + G_districtCode + "&date="+ _date
             if checkCenters(endPoint) == True:
                 break
-            else:
-                print ("Vaccine slot not available on: " + _date +"\n")
         print ("Sleeping for " + str(periodicity) + " mins")
         sleep(periodicity * 60)
         print ("Wake Up")        
