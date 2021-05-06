@@ -10,41 +10,42 @@ G_senderEmail = ""
 G_senderPassword = ""
 G_receierList = ""
 G_districtCode = ""
+G_age="999"
 
 # https://myaccount.google.com/lesssecureapps to allow less secure apps to send email
 def sendEmail(res):
-	subject = 'Vaccine Slots Available'
-	body = "Following vaccines centers are found \n\n" + res
-	content = """\
+    subject = 'Vaccine Slots Available'
+    body = "Following vaccines centers are found \n\n" + res
+    content = """\
 From: %s
 To: %s 
 Subject: %s
 %s
 """ % (G_senderEmail, ", ".join(G_receierList), subject, body)
-	print (content)
+    print (content)
 
-	try:
-	    server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-	    server.ehlo()
-	    server.login(G_senderEmail, G_senderPassword)
-	    server.sendmail(G_senderEmail, G_receierList, content)
-	    server.close()
-	    print ('Email sent to: ' + ", ".join(G_receierList))
-	except Exception as exc:
-	    print ('Exception sending email. Exception')
-	    print (exc)
-	
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(G_senderEmail, G_senderPassword)
+        server.sendmail(G_senderEmail, G_receierList, content)
+        server.close()
+        print ('Email sent to: ' + ", ".join(G_receierList))
+    except Exception as exc:
+        print ('Exception sending email. Exception')
+        print (exc)
+    
 def availableCenters(result):
-	retVal = []
-	centers = result['centers']
-	for center in centers:
-		sessions = center['sessions']
-		for session in sessions:
-			if session['available_capacity'] > 0:
-				res = { 'name':center['name'], 'block_name':center['block_name'],'age_limit':session['min_age_limit'], 'vaccine_type':session['vaccine'] , 'date':session['date'],'available_capacity':session['available_capacity'] }
-				retVal.append(res)
-	return retVal			
-	
+    retVal = []
+    centers = result['centers']
+    for center in centers:
+        sessions = center['sessions']
+        for session in sessions:
+            if session['available_capacity'] > 0 and session['min_age_limit'] <= int(G_age):
+                res = { 'name':center['name'], 'block_name':center['block_name'],'age_limit':session['min_age_limit'], 'vaccine_type':session['vaccine'] , 'date':session['date'],'available_capacity':session['available_capacity'] }
+                retVal.append(res)
+    return retVal           
+    
 def checkCenters(endPoint):
     print(ctime(time()))
     print (endPoint)
@@ -76,11 +77,11 @@ def checkCenters(endPoint):
         return False
 
 def parseArgs(argv):
-    global G_senderEmail, G_senderPassword,  G_receierList, G_districtCode
+    global G_senderEmail, G_senderPassword,  G_receierList, G_districtCode, G_age
 
-    usageString = 'Usage: cowinNotifier.py [-e senderEmail][-p senderPwd][-r commaSeparatedReceiversEmail][-d districtCode]' 
+    usageString = 'Usage: cowinNotifier.py [-e senderEmail][-p senderPwd][-r commaSeparatedReceiversEmail][-d districtCode][-a age]' 
     try:
-      opts, args = getopt.getopt(argv,"he:p:r:d:",["help","senderEmail=","senderPwd=","receiverList=","districtCode="])
+      opts, args = getopt.getopt(argv,"he:p:r:d:a:",["help","senderEmail=","senderPwd=","receiverList=","districtCode=","age="])
 
     except getopt.GetoptError:
         print (usageString)
@@ -98,6 +99,8 @@ def parseArgs(argv):
             G_receierList = arg
         elif opt in ("-d", "--districtCode"):
             G_districtCode = arg
+        elif opt in ("-a", "--age"):
+            G_age = arg
         else:
             print("Parameter " + opt + " is not supported")
             print(usageString)
@@ -114,8 +117,8 @@ def parseArgs(argv):
 
 if __name__ == '__main__':
     periodicity = 5 # check every 5 minutes
-    parseArgs(sys.argv[1:])	
-	
+    parseArgs(sys.argv[1:]) 
+    
     while True:
         for x in range(7):
             _date = datetime.date.today() + datetime.timedelta(days=x)
