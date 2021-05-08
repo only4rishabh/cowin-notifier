@@ -116,15 +116,16 @@ def parseArgs(argv):
     return 0
 
 if __name__ == '__main__':
-    periodicity = 5 # check every 5 minutes
     parseArgs(sys.argv[1:]) 
     
     while True:
+        periodicity = 5 # check every 5 minutes
         for x in range(7):
             _date = datetime.date.today() + datetime.timedelta(days=x)
             _date = str(_date.strftime("%d/%m/%Y")).replace("/","-")
             endPoint = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=" + G_districtCode + "&date="+ _date
             if checkCenters(endPoint) == True:
+                periodicity = 1 #once vaccine is found, send status every 1 min.
                 break
         print ("Sleeping for " + str(periodicity) + " mins")
         sleep(periodicity * 60)
