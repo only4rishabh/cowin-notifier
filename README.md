@@ -1,13 +1,15 @@
 # cowin-notifier
 Cowin-Notifier checks the availability of a vaccine slot for next 7 days in your district for your age and notifies you via an email.
 
-Usage: cowinNotifier.py [-e senderEmail][-p senderPwd][-r commaSeparatedReceiversEmail][-d districtCode][-a age]
+Usage: cowinNotifier.py [-e senderEmail][-p senderPwd][-r commaSeparatedReceiversEmail][-d districtCode][-c pinCode][-a age]
+e,p,r,d are necessary arguments
 
 Sample Command:
-python cowinNotifier.py -e sender@gmail.com -p myPwd -r receiver1@gmail.com,receiver2@gmail.com -d 193 -a 25
+python cowinNotifier.py -e sender@gmail.com -p myPwd -r receiver1@gmail.com,receiver2@gmail.com -d 193 -c 134003 -a 25
 
 Note:
-1. -e , -p and -r are necessary arguments.
+1. -e , -p, -r and -d are necessary arguments.
+2. -c is an optional argument. If specified, it will check for slot availablilty in your district. If not, will show in entire district.
 2. -a is an optional argument. If specified, it will check for slot availablilty for your age. If not, will show for all age groups.
 3. -d district code should be specified to search within your district
 4. To locate your district code, do the following:

@@ -10,6 +10,7 @@ G_senderEmail = ""
 G_senderPassword = ""
 G_receierList = ""
 G_districtCode = ""
+G_pincode = 0
 G_age="999"
 
 # https://myaccount.google.com/lesssecureapps to allow less secure apps to send email
@@ -39,11 +40,12 @@ def availableCenters(result):
     retVal = []
     centers = result['centers']
     for center in centers:
-        sessions = center['sessions']
-        for session in sessions:
-            if session['available_capacity'] > 0 and session['min_age_limit'] <= int(G_age):
-                res = { 'name':center['name'], 'block_name':center['block_name'],'age_limit':session['min_age_limit'], 'vaccine_type':session['vaccine'] , 'date':session['date'],'available_capacity':session['available_capacity'] }
-                retVal.append(res)
+        if G_pincode == 0 or center['pincode'] == int(G_pincode):
+            sessions = center['sessions']
+            for session in sessions:
+                if session['available_capacity'] > 0 and session['min_age_limit'] <= int(G_age):
+                   res = { 'name':center['name'], 'block_name':center['block_name'],'age_limit':session['min_age_limit'], 'vaccine_type':session['vaccine'] , 'date':session['date'],'available_capacity':session['available_capacity'] }
+                   retVal.append(res)
     return retVal           
     
 def checkCenters(endPoint):
@@ -77,11 +79,11 @@ def checkCenters(endPoint):
         return False
 
 def parseArgs(argv):
-    global G_senderEmail, G_senderPassword,  G_receierList, G_districtCode, G_age
+    global G_senderEmail, G_senderPassword,  G_receierList, G_districtCode, G_pincode, G_age
 
-    usageString = 'Usage: cowinNotifier.py [-e senderEmail][-p senderPwd][-r commaSeparatedReceiversEmail][-d districtCode][-a age]' 
+    usageString = 'Usage: cowinNotifier.py [-e senderEmail][-p senderPwd][-r commaSeparatedReceiversEmail][-d districtCode][-c pinCode][-a age] \ne,p,r,d are necessary arguments'
     try:
-      opts, args = getopt.getopt(argv,"he:p:r:d:a:",["help","senderEmail=","senderPwd=","receiverList=","districtCode=","age="])
+      opts, args = getopt.getopt(argv,"he:p:r:d:c:a:",["help","senderEmail=","senderPwd=","receiverList=","districtCode=","pinCode=","age="])
 
     except getopt.GetoptError:
         print (usageString)
@@ -99,17 +101,17 @@ def parseArgs(argv):
             G_receierList = arg
         elif opt in ("-d", "--districtCode"):
             G_districtCode = arg
+        elif opt in ("-c", "--pinCode"):
+            G_pincode = arg
         elif opt in ("-a", "--age"):
             G_age = arg
         else:
             print("Parameter " + opt + " is not supported")
             print(usageString)
 
-    if (G_senderEmail == '' or G_senderPassword == '' or G_receierList == ''):
+    if (G_senderEmail == '' or G_senderPassword == '' or G_receierList == '' or G_districtCode == ''):
         print(usageString)
         sys.exit(3)
-    if (G_districtCode == ''):
-        G_districtCode = "193" # Code for district Ambala, if nothing is specified.
     G_receierList = G_receierList.split(',')
     G_receierList = [s.strip() for s in G_receierList]
 
